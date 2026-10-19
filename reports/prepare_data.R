@@ -2,12 +2,13 @@ library(tidyr)
 library(dplyr)
 library(janitor)
 
-maternal_mortality <- read.csv("./data/raw/maternal_mortality.csv", header = TRUE)
-infant_mortality <- read.csv("./data/raw/infant_mortality.csv", header = TRUE)
-neonatal_mortality <- read.csv("./data/raw/neonatal_mortality.csv", header = TRUE)
-under5_mortality <- read.csv("./data/raw/under5_mortality.csv", header = TRUE)
+# Read mortality data
+maternal_mortality <- read.csv("./data/raw/maternal_mortality.csv")
+infant_mortality <- read.csv("./data/raw/infant_mortality.csv")
+neonatal_mortality <- read.csv("./data/raw/neonatal_mortality.csv")
+under5_mortality <- read.csv("./data/raw/under5_mortality.csv")
 
-#Prepare World Bank data
+# General function for all mortality data
 prepare_mortality <- function(data, value_name) {
   data |>
     pivot_longer(
@@ -17,6 +18,11 @@ prepare_mortality <- function(data, value_name) {
     ) |>
     mutate(
       year = as.integer(sub("X", "", year))
+    ) |>
+    select(
+      iso,
+      year,
+      all_of(value_name)
     )
 }
 
@@ -39,6 +45,7 @@ under5_mortality_long <- prepare_mortality(
   under5_mortality,
   "under5_mortality"
 )
+
 
 #Prepare disaster data
 disaster <- read.csv("./data/raw/disaster.csv")
@@ -90,12 +97,18 @@ conflict <- conflict |>
 
 conflict
 
+covariates <- read.csv("./data/raw/covariates.csv")
+
+
 final_data <- maternal_mortality_long |>
+  left_join(infant_mortality_long, by = c("iso", "year")) |>
   left_join(neonatal_mortality_long, by = c("iso", "year")) |>
   left_join(under5_mortality_long, by = c("iso", "year")) |>
   left_join(disaster, by = c("iso", "year")) |>
-  left_join(conflict, by = c("iso", "year"))
+  left_join(conflict, by = c("iso", "year")) |>
+  left_join(covariates, by = c("iso", "year"))
 
+names(final_data)
 dir.create("./data/processed", showWarnings = FALSE)
 
 write.csv(
