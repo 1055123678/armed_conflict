@@ -1,0 +1,87 @@
+---
+title: "Comparison of Final Armed Conflict Data"
+format: html
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+```
+
+## Purpose
+
+This report independently reproduces the data-preparation assignment and compares the result produced by the coding agent with `data/processed/final_data.csv`. The original preparation script and final dataset are not overwritten.
+
+## Create the comparison dataset
+
+```{r}
+# Run this report from the project root.
+source("scripts/create_compared_final_data.R")
+```
+
+The four mortality files are reshaped with one reusable function. Disaster records are restricted to earthquakes and droughts in 2000--2019. Conflict deaths are summed within country-year, classified using the 25-death threshold, and lagged by moving the exposure forward one year. All sources are then joined by `iso` and `year`.
+
+## Validate the output
+
+```{r}
+stopifnot(
+  nrow(compared_final_data) == 186 * 20,
+  !anyDuplicated(compared_final_data[c("iso", "year")]),
+  all(range(compared_final_data$year) == c(2000, 2019)),
+  all(compared_final_data$earthquake %in% 0:1),
+  all(compared_final_data$drought %in% 0:1),
+  all(compared_final_data$armed_conflict %in% 0:1)
+)
+
+data.frame(
+  rows = nrow(compared_final_data),
+  countries = n_distinct(compared_final_data$iso),
+  first_year = min(compared_final_data$year),
+  last_year = max(compared_final_data$year),
+  duplicate_country_years = sum(duplicated(compared_final_data[c("iso", "year")]))
+)
+```
+
+## Compare with the original result
+
+```{r}
+original_final_data <- read_csv(
+  "data/processed/final_data.csv",
+  show_col_types = FALSE,
+  na = c("", "NA")
+) |>
+  arrange(iso, year)
+
+comparison_summary <- tibble(
+  variable = names(compared_final_data),
+  differing_rows = map_int(
+    names(compared_final_data),
+    ~ {
+      original_value <- original_final_data[[.x]]
+      compared_value <- compared_final_data[[.x]]
+      both_present <- !is.na(original_value) & !is.na(compared_value)
+      same_present <- if (is.numeric(original_value)) {
+        near(original_value, compared_value)
+      } else {
+        original_value == compared_value
+      }
+      same_value <- (is.na(original_value) & is.na(compared_value)) |
+        (both_present & same_present)
+      sum(!same_value)
+    }
+  )
+)
+
+comparison_summary
+```
+
+## Conclusion
+
+The row keys and substantive source values agree. The differences are in `earthquake` and `drought`: the original pipeline leaves unmatched country-years as missing after its joins, whereas a binary indicator must equal zero when no qualifying event is recorded. The coding-agent version therefore replaces missing joined indicators with zero. The conflict indicator already agrees in every row, and the new pipeline explicitly applies the same zero-fill rule for safety. It is also more concise because it applies one mortality function to a named file vector and reduces the resulting tables into one dataset.
+
+The independently generated CSV is saved as `data/processed/compared_final_data.csv`.

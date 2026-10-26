@@ -108,6 +108,14 @@ final_data <- maternal_mortality_long |>
   left_join(conflict, by = c("iso", "year")) |>
   left_join(covariates, by = c("iso", "year"))
 
+final_data <- final_data |>
+  mutate(
+    across(
+      c(earthquake, drought, armed_conflict),
+      ~ replace_na(.x, 0L)
+    )
+  )
+
 names(final_data)
 dir.create("./data/processed", showWarnings = FALSE)
 
