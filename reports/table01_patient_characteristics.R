@@ -146,21 +146,44 @@ table_data <- table_data |>
   )
 
 # Create formatted table
-ft <- flextable(table_data) |>
-  theme_booktabs() |>
-  autofit()
+library(officer)
 
-ft <- set_caption(
+ft <- flextable(table_data) |>
+  set_header_labels(
+    Variable = "Characteristic",
+    Overall = "Overall",
+    `Overall missing` = "Missing",
+    `No conflict` = "No conflict",
+    `No conflict missing` = "Missing",
+    Conflict = "Conflict",
+    `Conflict missing` = "Missing"
+  ) |>
+  theme_booktabs() |>
+  autofit() |>
+  fontsize(size = 9, part = "all")
+
+ft <- add_footer_lines(
   ft,
-  "Table 1. Characteristics of country-year observations by armed conflict status"
+  values = paste(
+    "Values are presented as mean (SD) for continuous variables and n (%) for binary variables.",
+    "Missing columns report the number of missing observations.",
+    "Observations represent country-years."
+  )
 )
 
-# Save Word document
-dir.create("reports", showWarnings = FALSE)
+landscape_section <- prop_section(
+  page_size = page_size(orient = "landscape"),
+  page_margins = page_mar(
+    top = 0.5, bottom = 0.5,
+    left = 0.5, right = 0.5
+  ),
+  type = "continuous"
+)
 
 save_as_docx(
-  ft,
-  path = "reports/table01_patient_characteristics.docx"
+  "Table 1. Study characteristics by armed conflict status" = ft,
+  path = "reports/table01_patient_characteristics.docx",
+  pr_section = landscape_section
 )
 
 #Peer review: change variable names on the table more readable
