@@ -123,6 +123,28 @@ table_data <- table_data |>
     Conflict, `Conflict missing`
   )
 
+table_data <- table_data |>
+  mutate(
+    Variable = recode(
+      Variable,
+      "Observations (N)" = "Number of observations",
+      "maternal_mortality" = "Maternal mortality",
+      "infant_mortality" = "Infant mortality",
+      "neonatal_mortality" = "Neonatal mortality",
+      "under5_mortality" = "Under-5 mortality",
+      "gdp_1000" = "GDP per capita (1000s)",
+      "pop_dens" = "Population density",
+      "urban" = "Urban population",
+      "age_dep" = "Age dependency ratio",
+      "male_edu" = "Male education",
+      "temp" = "Temperature",
+      "rainfall_1000" = "Rainfall (1000s)",
+      "oecd" = "OECD membership (Yes)",
+      "earthquake" = "Earthquake (Yes)",
+      "drought" = "Drought (Yes)"
+    )
+  )
+
 # Create formatted table
 ft <- flextable(table_data) |>
   theme_booktabs() |>
@@ -141,3 +163,4 @@ save_as_docx(
   path = "reports/table01_patient_characteristics.docx"
 )
 
+#Peer review: change variable names on the table more readable
