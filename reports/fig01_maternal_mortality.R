@@ -69,7 +69,7 @@ print(fig1)
 dir.create("figures", showWarnings = FALSE)
 
 ggsave(
-  filename = "figures/fig01_maternal_mortality.png",
+  filename = "reports/fig01_maternal_mortality.png",
   plot = fig1,
   width = 10,
   height = 6,
