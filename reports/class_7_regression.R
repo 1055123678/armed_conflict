@@ -30,8 +30,31 @@ stargazer(
   maternal_mod, under5_mod, infant_mod, neonatal_mod,
   type = "html",
   out = "table02_Association_Between_Armed_Conflict_and_Maternal_and_Child_Mortality.html",
-  title = "Table 2. Association Between Armed Conflict and Maternal and Child Mortality: Adjusted Regression Coefficients and 95% Confidence Intervals",
-  column.labels = c("Maternal", "Under-five", "Infant", "Neonatal"),
+
+  title = "Association Between Armed Conflict and Maternal and Child Mortality: Adjusted Regression Coefficients and Standard Errors",
+
+  column.labels = c(
+    "Maternal mortality",
+    "Under-five mortality",
+    "Infant mortality",
+    "Neonatal mortality"
+  ),
+
+  covariate.labels = c(
+    "Armed conflict",
+    "Log GDP",
+    "OECD membership",
+    "Population density",
+    "Urbanization",
+    "Age dependency ratio",
+    "Male education",
+    "Temperature",
+    "Rainfall",
+    "Earthquake",
+    "Drought"
+  ),
+
   dep.var.labels.include = FALSE,
   digits = 3
 )
+
